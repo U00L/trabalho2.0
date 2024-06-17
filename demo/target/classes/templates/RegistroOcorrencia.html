@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ocorrências</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            /* Azul Suave */
+            display: flex;
+            /* Para usar flexbox */
+            justify-content: center;
+            /* Centraliza conteúdo na horizontal */
+            align-items: center;
+            /* Centraliza conteúdo na vertical */
+            height: 100vh;
+            /* Altura total da tela */
+        }
+
+        .container {
+            width: 80%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            background-color: #fff;
+        }
+
+        .form-container,
+        .list-container {
+            width: 50%;
+            /* Divide em duas colunas */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: calc(100% - 10px);
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+        }
+
+        .form-group button {
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #1725e7;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="form-container">
+            <h1>Registro de Ocorrências</h1>
+            <div class="form-group">
+                <label for="descricao">Descrição:</label>
+                <textarea id="descricao"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tipoOcorrencia">Tipo de Ocorrência:</label>
+                <select id="tipoOcorrencia">
+                    <option value="Incidente">Incidente</option>
+                    <option value="Emergência">Emergência</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="localizacao">Localização:</label>
+                <input type="text" id="localizacao">
+            </div>
+            <div class="form-group">
+                <button onclick="adicionarOcorrencia()">Registrar Ocorrência</button>
+            </div>
+        </div>
+
+        <div class="list-container">
+            <h2>Listagem de Ocorrências</h2>
+            <div class="form-group">
+                <label for="filtroTipo">Filtrar por Tipo de Ocorrência:</label>
+                <select id="filtroTipo" onchange="filtrarOcorrencias()">
+                    <option value="">Todos</option>
+                    <option value="Incidente">Incidente</option>
+                    <option value="Emergência">Emergência</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filtroLocalizacao">Filtrar por Localização:</label>
+                <input type="text" id="filtroLocalizacao" onkeyup="filtrarOcorrencias()">
+            </div>
+            <div class="table-wrapper">
+                <table id="tabelaOcorrencias">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Localização</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Ocorrências serão listadas aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ocorrencias = [];
+
+        function adicionarOcorrencia() {
+            const descricao = document.getElementById('descricao').value;
+            const tipoOcorrencia = document.getElementById('tipoOcorrencia').value;
+            const localizacao = document.getElementById('localizacao').value;
+
+            const ocorrencia = {
+                descricao: descricao,
+                tipoOcorrencia: tipoOcorrencia,
+                localizacao: localizacao,
+                status: 'Aberta'
+            };
+
+            ocorrencias.push(ocorrencia);
+            listarOcorrencias();
+            limparFormulario();
+        }
+
+        function listarOcorrencias() {
+            const tabela = document.getElementById('tabelaOcorrencias').getElementsByTagName('tbody')[0];
+            tabela.innerHTML = '';
+
+            ocorrencias.forEach((ocorrencia, index) => {
+                const row = tabela.insertRow();
+                row.insertCell(0).innerText = ocorrencia.descricao;
+                row.insertCell(1).innerText = ocorrencia.tipoOcorrencia;
+                row.insertCell(2).innerText = ocorrencia.localizacao;
+                row.insertCell(3).innerText = ocorrencia.status;
+                const acoesCell = row.insertCell(4);
+                acoesCell.innerHTML = `<button onclick="editarOcorrencia(${index})">Editar</button> 
+                                       <button onclick="fecharOcorrencia(${index})">Fechar</button>`;
+            });
+        }
+
+        function editarOcorrencia(index) {
+            const descricao = prompt("Atualize a descrição:", ocorrencias[index].descricao);
+            const tipoOcorrencia = prompt("Atualize o tipo de ocorrência:", ocorrencias[index].tipoOcorrencia);
+            const localizacao = prompt("Atualize a localização:", ocorrencias[index].localizacao);
+
+            if (descricao !== null) ocorrencias[index].descricao = descricao;
+            if (tipoOcorrencia !== null) ocorrencias[index].tipoOcorrencia = tipoOcorrencia;
+            if (localizacao !== null) ocorrencias[index].localizacao = localizacao;
+
+            listarOcorrencias();
+        }
+
+        function fecharOcorrencia(index) {
+            ocorrencias[index].status = 'Fechada';
+            listarOcorrencias();
+        }
+
+        function filtrarOcorrencias() {
+            const tipo = document.getElementById('filtroTipo').value;
+            const localizacao = document.getElementById('filtroLocalizacao').value.toLowerCase();
+
+            const tabela = document.getElementById('tabelaOcorrencias').getElementsByTagName('tbody')[0];
+            tabela.innerHTML = '';
+
+            ocorrencias.forEach((ocorrencia, index) => {
+                if ((tipo === '' || ocorrencia.tipoOcorrencia === tipo) &&
+                    (localizacao === '' || ocorrencia.localizacao.toLowerCase().includes(localizacao))) {
+                    const row = tabela.insertRow();
+                    row.insertCell(0).innerText = ocorrencia.descricao;
+                    row.insertCell(1).innerText = ocorrencia.tipoOcorrencia;
+                    row.insertCell(2).innerText = ocorrencia.localizacao;
+                    row.insertCell(3).innerText = ocorrencia.status;
+                    const acoesCell = row.insertCell(4);
+                    acoesCell.innerHTML = `<button onclick="editarOcorrencia(${index})">Editar</button> 
+                                       <button onclick="fecharOcorrencia(${index})">Fechar</button>`;
+                }
+            });
+        }
+
+        function limparFormulario() {
+            document.getElementById('descricao').value = '';
+            document.getElementById('tipoOcorrencia').value = 'Incidente';
+            document.getElementById('localizacao').value = '';
+        }
+    </script>
+
+</body>
+
+</html>
